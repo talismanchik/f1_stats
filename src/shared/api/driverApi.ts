@@ -1,31 +1,10 @@
 import { DriverDetailsResponse, DriverAchievements } from '../types/driver';
 import { axiosInstance } from './axios';
 
-const getDriverImage = async (driverId: string): Promise<string | undefined> => {
-  try {
-    const response = await axiosInstance.get(`/drivers/${driverId}/image.json`);
-    return response.data.MRData.DriverTable.Drivers[0]?.imageUrl;
-  } catch (error) {
-    console.error('Failed to fetch driver image:', error);
-    return undefined;
-  }
-};
-
 export const getDriverDetails = async (driverId: string): Promise<DriverDetailsResponse> => {
   try {
-    const [detailsResponse, imageUrl] = await Promise.all([
-      axiosInstance.get(`/drivers/${driverId}.json`),
-      getDriverImage(driverId)
-    ]);
-
-    const data = detailsResponse.data;
-    const driver = data.MRData.DriverTable.Drivers[0];
-    
-    if (driver) {
-      driver.imageUrl = imageUrl;
-    }
-
-    return data;
+    const response = await axiosInstance.get(`/drivers/${driverId}.json`);
+    return response.data;
   } catch (error) {
     console.error('Failed to fetch driver details:', error);
     throw new Error('Failed to fetch driver details');
@@ -66,7 +45,6 @@ export const getDriverAchievements = async (driverId: string): Promise<DriverAch
       if (result.position === '3') acc.thirdPlaces++;
       if (['1', '2', '3'].includes(result.position)) acc.podiums++;
       if (result.grid === '1') acc.polePositions++;
-      if (result.FastestLap?.rank === '1') acc.fastestLaps++;
       acc.careerPoints += parseInt(result.points) || 0;
       
       return acc;
@@ -76,7 +54,6 @@ export const getDriverAchievements = async (driverId: string): Promise<DriverAch
       thirdPlaces: 0,
       podiums: 0,
       polePositions: 0,
-      fastestLaps: 0,
       careerPoints: 0
     });
 

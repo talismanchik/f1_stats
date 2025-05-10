@@ -1,5 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DriverDetails } from './types';
+import { AppDispatch } from '../../../app/store';
+import { getDriverDetails, getDriverAchievements } from '../../../shared/api/driverApi';
 import {
   fetchDriverDetailsStart,
   fetchDriverDetailsSuccess,
@@ -8,32 +10,34 @@ import {
 
 export const fetchDriverDetails = createAsyncThunk(
   'driverDetails/fetchDriverDetails',
-  async (driverId: string, { dispatch }) => {
+  async (driverId: string, { dispatch }: { dispatch: AppDispatch }) => {
     try {
       dispatch(fetchDriverDetailsStart());
       
-      // TODO: Заменить на реальный API запрос
-      const response = await fetch(`https://ergast.com/api/f1/drivers/${driverId}.json`);
-      const data = await response.json();
+      const [detailsResponse, achievements] = await Promise.all([
+        getDriverDetails(driverId),
+        getDriverAchievements(driverId)
+      ]);
+
+      const driver = detailsResponse.MRData.DriverTable.Drivers[0];
       
       const driverDetails: DriverDetails = {
-        driverId: data.MRData.DriverTable.Drivers[0].driverId,
-        permanentNumber: data.MRData.DriverTable.Drivers[0].permanentNumber,
-        code: data.MRData.DriverTable.Drivers[0].code,
-        url: data.MRData.DriverTable.Drivers[0].url,
-        givenName: data.MRData.DriverTable.Drivers[0].givenName,
-        familyName: data.MRData.DriverTable.Drivers[0].familyName,
-        dateOfBirth: data.MRData.DriverTable.Drivers[0].dateOfBirth,
-        nationality: data.MRData.DriverTable.Drivers[0].nationality,
-        // TODO: Добавить реальные данные
-        biography: 'Биография гонщика...',
+        driverId: driver.driverId,
+        permanentNumber: driver.permanentNumber,
+        code: driver.code,
+        url: driver.url,
+        givenName: driver.givenName,
+        familyName: driver.familyName,
+        dateOfBirth: driver.dateOfBirth,
+        nationality: driver.nationality,
         achievements: {
-          championships: 0,
-          wins: 0,
-          podiums: 0,
-          polePositions: 0,
-          fastestLaps: 0,
-        },
+          championships: achievements.championships,
+          wins: achievements.wins,
+          firstPlaces: achievements.wins,
+          secondPlaces: achievements.secondPlaces,
+          podiums: achievements.podiums,
+          polePositions: achievements.polePositions
+        }
       };
 
       dispatch(fetchDriverDetailsSuccess(driverDetails));

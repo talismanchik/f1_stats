@@ -43,15 +43,13 @@ export const DriversPage: React.FC = () => {
 
   const standings = React.useMemo(() => {
     if (!allStandings) return [];
-    return allStandings.filter(standing => standing.year === String(currentYear));
+    return allStandings.filter((standing: DriverStanding) => standing.year === String(currentYear));
   }, [allStandings, currentYear]);
 
   const fetchData = useCallback((year: number, page: number) => {
     if (cachedYear) {
-      console.log('loading from cache:', year);
       setIsInitialized(true);
     } else {
-      console.log('fetching data:', year, page);
       dispatch(fetchDriverStandings({ year, page }));
     }
   }, [dispatch, cachedYear]);
@@ -88,16 +86,9 @@ export const DriversPage: React.FC = () => {
   }, [currentYear, currentPage, hasMore, loading, dispatch]);
 
   const handleDriverPress = useCallback(async (driverId: string) => {
-    try {
-      console.log('Starting navigation process for driver:', driverId);
-      console.log('Current navigation state:', navigation);
-      
+    try {         
       await dispatch(fetchDriverDetails(driverId)).unwrap();
-      console.log('Driver details loaded successfully');
-      
-      console.log('Attempting navigation to DriverPage');
       navigation.navigate('DriverPage', { driverId });
-      console.log('Navigation completed');
     } catch (error) {
       console.error('Error in handleDriverPress:', error);
     }

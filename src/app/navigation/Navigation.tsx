@@ -10,20 +10,19 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const Navigation = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: '#fff' }
+        }}
+      >
         <Stack.Screen
           name="Drivers"
           component={DriversPage}
-          options={{
-            title: 'Гонщики',
-          }}
         />
         <Stack.Screen
           name="DriverPage"
           component={DriverPage}
-          options={{
-            title: 'Гонщик',
-          }}
         />
       </Stack.Navigator>
     </NavigationContainer>
