@@ -54,26 +54,31 @@ const driverStandingsSlice = createSlice({
     },
     setStandings: (state, action: PayloadAction<{ drivers: DriverStanding[]; total: number; year: number }>) => {
       state.standings = action.payload.drivers;
+      state.hasMore = action.payload.drivers.length === 10 && action.payload.total > 10;
       state.cache[action.payload.year] = {
         standings: action.payload.drivers,
         totalDrivers: action.payload.total,
       };
     },
     appendStandings: (state, action: PayloadAction<{ drivers: DriverStanding[]; total: number; year: number }>) => {
-      state.standings = [...state.standings, ...action.payload.drivers];
+      action.payload.drivers.forEach(driver => {
+        state.standings.push(driver);
+      });
+      state.hasMore = state.standings.length < action.payload.total && action.payload.drivers.length === 10;
       if (state.cache[action.payload.year]) {
-        state.cache[action.payload.year].standings = [
-          ...state.cache[action.payload.year].standings,
-          ...action.payload.drivers,
-        ];
+        action.payload.drivers.forEach(driver => {
+          state.cache[action.payload.year].standings.push(driver);
+        });
       }
     },
     loadFromCache: (state, action: PayloadAction<number>) => {
       const cachedData = state.cache[action.payload];
       if (cachedData) {
         state.standings = cachedData.standings;
+        state.hasMore = cachedData.standings.length < cachedData.totalDrivers;
         state.loading = false;
         state.error = null;
+        state.currentPage = Math.max(1, Math.ceil(cachedData.standings.length / 10));
       }
     },
   },

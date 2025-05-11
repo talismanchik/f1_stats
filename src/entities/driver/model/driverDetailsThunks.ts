@@ -8,11 +8,11 @@ import {
   fetchDriverDetailsFailure,
 } from './driverDetailsSlice';
 
-export const fetchDriverDetails = createAsyncThunk(
+export const fetchDriverDetails = createAsyncThunk<DriverDetails, string>(
   'driverDetails/fetchDriverDetails',
-  async (driverId: string, { dispatch }: { dispatch: AppDispatch }) => {
+  async (driverId, thunkAPI) => {
     try {
-      dispatch(fetchDriverDetailsStart());
+      thunkAPI.dispatch(fetchDriverDetailsStart());
       
       const [detailsResponse, achievements] = await Promise.all([
         getDriverDetails(driverId),
@@ -40,11 +40,11 @@ export const fetchDriverDetails = createAsyncThunk(
         }
       };
 
-      dispatch(fetchDriverDetailsSuccess(driverDetails));
+      thunkAPI.dispatch(fetchDriverDetailsSuccess(driverDetails));
       return driverDetails;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при загрузке данных гонщика';
-      dispatch(fetchDriverDetailsFailure(errorMessage));
+      thunkAPI.dispatch(fetchDriverDetailsFailure(errorMessage));
       throw error;
     }
   }

@@ -66,18 +66,9 @@ export const DriverPage: React.FC = () => {
 
   const renderBiography = () => (
     <View style={styles.tabContent}>
-      <View style={styles.bioItem}>
-        <Text style={styles.bioLabel}>Дата рождения</Text>
-        <Text style={styles.bioValue}>{driverDetails?.dateOfBirth}</Text>
-      </View>
-      <View style={styles.bioItem}>
-        <Text style={styles.bioLabel}>Национальность</Text>
-        <Text style={styles.bioValue}>{driverDetails?.nationality}</Text>
-      </View>
-      <View style={styles.bioItem}>
-        <Text style={styles.bioLabel}>Код гонщика</Text>
-        <Text style={styles.bioValue}>{driverDetails?.code}</Text>
-      </View>
+      <View style={styles.bioItem}><Text style={styles.bioLabel}>Дата рождения</Text><Text style={styles.bioValue}>{driverDetails?.dateOfBirth}</Text></View>
+      <View style={styles.bioItem}><Text style={styles.bioLabel}>Национальность</Text><Text style={styles.bioValue}>{driverDetails?.nationality}</Text></View>
+      <View style={styles.bioItem}><Text style={styles.bioLabel}>Код гонщика</Text><Text style={styles.bioValue}>{driverDetails?.code}</Text></View>
     </View>
   );
 
@@ -206,16 +197,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   bioItem: {
-    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
   },
   bioLabel: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#CCCCCC',
-    marginBottom: 5,
   },
   bioValue: {
-    fontSize: 18,
-    fontWeight: '500',
+    fontSize: 16,
     color: '#FFFFFF',
   },
   achievement: {

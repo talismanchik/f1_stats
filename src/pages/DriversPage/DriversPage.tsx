@@ -10,6 +10,7 @@ import {
   selectHasMore,
   selectCachedYear 
 } from '../../entities/driver/model/driverStandingsSelectors';
+import { loadFromCache, resetStandings } from '../../entities/driver/model/driverStandingsSlice';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { Pagination } from '../../features/pagination/Pagination';
 import { DriversList } from '../../entities/driver/ui/DriversList';
@@ -42,13 +43,28 @@ export const DriversPage: React.FC = () => {
   const cachedYear = useSelector(selectCachedYear(currentYear));
 
   const standings = React.useMemo(() => {
-    if (!allStandings) return [];
-    return allStandings.filter((standing: DriverStanding) => standing.year === String(currentYear));
+    const uniqueStandings = new Map();
+    (allStandings || [])
+      .filter((standing: DriverStanding) => standing.year === String(currentYear))
+      .forEach((standing: DriverStanding) => {
+        if (!uniqueStandings.has(standing.Driver.driverId)) {
+          uniqueStandings.set(standing.Driver.driverId, standing);
+        }
+      });
+    return Array.from(uniqueStandings.values());
   }, [allStandings, currentYear]);
 
   const fetchData = useCallback((year: number, page: number) => {
-    if (cachedYear) {
-      setIsInitialized(true);
+    if (page === 1) {
+      if (cachedYear) {
+        dispatch(loadFromCache(year));
+        setIsInitialized(true);
+      } else {
+        dispatch(fetchDriverStandings({ year, page }))
+          .unwrap()
+          .then(() => setIsInitialized(true))
+          .catch(() => setIsInitialized(false));
+      }
     } else {
       dispatch(fetchDriverStandings({ year, page }));
     }
@@ -57,15 +73,18 @@ export const DriversPage: React.FC = () => {
   const debouncedFetchData = useDebounce(fetchData);
 
   useEffect(() => {
-    setIsInitialized(false);
-    debouncedFetchData(currentYear, 1);
-  }, [currentYear, debouncedFetchData]);
+    if (currentYear) {
+      setIsInitialized(false);
+      setCurrentPage(1);
+      debouncedFetchData(currentYear, 1);
+    }
+  }, [currentYear, debouncedFetchData, dispatch]);
 
   useEffect(() => {
-    if (!loading && standings.length > 0) {
+    if (!loading && (standings.length > 0 || cachedYear)) {
       setIsInitialized(true);
     }
-  }, [loading, standings.length]);
+  }, [loading, standings.length, cachedYear]);
 
   const handlePrevYear = useCallback(() => {
     setCurrentYear(prev => prev - 1);
@@ -77,11 +96,14 @@ export const DriversPage: React.FC = () => {
     setCurrentPage(1);
   }, []);
 
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = useCallback(async () => {
     if (hasMore && !loading) {
-      const nextPage = currentPage + 1;
-      setCurrentPage(nextPage);
-      dispatch(fetchDriverStandings({ year: currentYear, page: nextPage }));
+      try {
+        await dispatch(fetchDriverStandings({ year: currentYear, page: currentPage + 1 })).unwrap();
+        setCurrentPage(prev => prev + 1);
+      } catch (error) {
+        console.error('Error loading more drivers:', error);
+      }
     }
   }, [currentYear, currentPage, hasMore, loading, dispatch]);
 
@@ -112,6 +134,7 @@ export const DriversPage: React.FC = () => {
         onEndReached={handleLoadMore}
         isInitialized={isInitialized}
         onDriverPress={handleDriverPress}
+        year={currentYear}
       />
       {error && (
         <ErrorView 

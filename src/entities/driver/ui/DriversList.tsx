@@ -1,4 +1,4 @@
-import React, { useCallback, memo } from 'react';
+import React, { useCallback, memo, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { DriverStanding } from '../../../shared/types/driver';
 import { DriverItem } from './DriverItem';
@@ -10,6 +10,7 @@ interface Props {
   onEndReached: () => void;
   onDriverPress: (driverId: string) => void;
   isInitialized: boolean;
+  year: number;
 }
 
 export const DriversList: React.FC<Props> = ({
@@ -19,7 +20,25 @@ export const DriversList: React.FC<Props> = ({
   onEndReached,
   onDriverPress,
   isInitialized,
+  year,
 }) => {
+  const flatListRef = useRef<FlatList>(null);
+  const isFetchingMore = useRef(false);
+
+  useEffect(() => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, [year]);
+
+  const handleEndReached = useCallback(() => {
+    if (hasMore && !loading && isInitialized && !isFetchingMore.current) {
+      isFetchingMore.current = true;
+      onEndReached();
+      setTimeout(() => {
+        isFetchingMore.current = false;
+      }, 1000);
+    }
+  }, [hasMore, loading, isInitialized, onEndReached]);
+
   const renderFooter = useCallback(() => {
     if (!hasMore || !isInitialized) return null;
     return <LoadingFooter />;
@@ -49,11 +68,12 @@ export const DriversList: React.FC<Props> = ({
 
   return (
     <FlatList
+      ref={flatListRef}
       data={standings}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      onEndReached={hasMore && isInitialized ? onEndReached : undefined}
-      onEndReachedThreshold={0.3}
+      onEndReached={handleEndReached}
+      onEndReachedThreshold={0.2}
       ListFooterComponent={renderFooter}
       ListEmptyComponent={renderEmpty}
       contentContainerStyle={contentContainerStyle()}
@@ -127,6 +147,22 @@ const EmptyState = memo(() => (
   </View>
 ));
 
-const MemoizedDriverItem = memo(({ driver, onPress }: { driver: DriverStanding; onPress: (driverId: string) => void }) => (
-  <DriverItem driver={driver} onPress={onPress} />
-));
+const MemoizedDriverItem = memo(
+  ({ driver, onPress }: { 
+    driver: DriverStanding; 
+    onPress: (driverId: string) => void;
+  }) => (
+    <DriverItem 
+      driver={driver} 
+      onPress={onPress}
+    />
+  ),
+  (prevProps, nextProps) => {
+    // Оптимизация ререндера
+    return (
+      prevProps.driver.Driver.driverId === nextProps.driver.Driver.driverId &&
+      prevProps.driver.position === nextProps.driver.position &&
+      prevProps.driver.points === nextProps.driver.points
+    );
+  }
+);

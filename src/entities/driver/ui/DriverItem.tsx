@@ -79,7 +79,7 @@ export const DriverItem: React.FC<DriverItemProps> = ({ driver, onPress }) => {
         </View>
         {driverData.permanentNumber && (
           <View style={[styles.numberBlock, { backgroundColor: teamColor }]}>
-            <Text style={styles.number}>#{driverData.permanentNumber}</Text>
+            <Text style={styles.number}>{driverData.permanentNumber}</Text>
           </View>
         )}
         <View style={styles.infoBlock}>
@@ -87,7 +87,7 @@ export const DriverItem: React.FC<DriverItemProps> = ({ driver, onPress }) => {
           <Text style={styles.team}>{team}</Text>
         </View>
         <View style={styles.rightBlock}>
-          <Text style={styles.points}>{points}pts</Text>
+          <Text style={styles.points}>{points} pts</Text>
           <Icon name="chevron-forward" size={20} color="#888888" />
         </View>
       </Pressable>
@@ -104,16 +104,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#2A2A2A',
+    height: 100,
   },
   positionBlock: {
     width: 32,
     alignItems: 'center',
   },
   numberBlock: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     borderRadius: 4,
     marginLeft: 8,
+    marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -127,12 +129,12 @@ const styles = StyleSheet.create({
     minWidth: 70,
   },
   position: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#FF1E1E',
+    color: 'rgba(139, 139, 139, 0.8)',
   },
   number: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
