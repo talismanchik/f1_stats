@@ -37,13 +37,10 @@ export const fetchDriverStandings = createAsyncThunk(
         dispatch(resetStandings());
       }
 
-      console.log('Fetching page', page, 'Current standings length:', (getState() as any).driverStandings.standings.length);
-
       const offset = (page - 1) * DRIVERS_PER_PAGE;
       const data = await f1Api.getDriverStandings(year, DRIVERS_PER_PAGE, offset, signal);
       const drivers = data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings || [];
       const total = parseInt(data.MRData.total, 10);
-console.log(drivers);
 
       const formattedDrivers: DriverStanding[] = drivers.map((driver: any) => ({
         position: driver.position,
@@ -74,8 +71,6 @@ console.log(drivers);
       } else {
         dispatch(appendStandings({ drivers: formattedDrivers, total, year }));
       }
-
-      console.log('After update standings length:', (getState() as any).driverStandings.standings.length);
 
       return { drivers: formattedDrivers, total };
     } catch (error) {

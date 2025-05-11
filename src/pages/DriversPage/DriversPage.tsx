@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, memo } from 'react';
+import React, { useEffect, useCallback, memo, useMemo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, StatusBar, Platform } from 'react-native';
 import { useSelector } from 'react-redux';
 import { fetchDriverStandings } from '../../entities/driver/model/standings/driverStandingsThunks';
@@ -19,6 +19,8 @@ import { DriverStanding } from '../../shared/types/driver';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../app/navigation/types';
+import { TabBar } from '../../widgets/TabBar/TabBar';
+import { ResultsPage } from '../ResultsPage/ResultsPage';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -42,8 +44,9 @@ export const DriversPage: React.FC = () => {
   const [isInitialized, setIsInitialized] = React.useState(false);
   const cachedYear = useSelector(selectCachedYear(currentYear));
   const noDataForYear = useSelector((state: any) => state.driverStandings.noDataForYear);
+  const [activeTab, setActiveTab] = React.useState<'drivers' | 'results'>('drivers');
 
-  const standings = React.useMemo(() => {
+  const standings = useMemo(() => {
     const uniqueStandings = new Map();
     (allStandings || [])
       .filter((standing: DriverStanding) => standing.year === String(currentYear))
@@ -128,16 +131,20 @@ export const DriversPage: React.FC = () => {
           isFirstValue={false}
         />
       </View>
-      <DriversList
-        standings={standings}
-        loading={loading}
-        hasMore={hasMore}
-        onEndReached={handleLoadMore}
-        isInitialized={isInitialized}
-        onDriverPress={handleDriverPress}
-        year={currentYear}
-        noDataForYear={noDataForYear}
-      />
+      {activeTab === 'drivers' ? (
+        <DriversList
+          standings={standings}
+          loading={loading}
+          hasMore={hasMore}
+          onEndReached={handleLoadMore}
+          isInitialized={isInitialized}
+          onDriverPress={handleDriverPress}
+          year={currentYear}
+          noDataForYear={noDataForYear}
+        />
+      ) : (
+        <ResultsPage year={currentYear} />
+      )}
       {error && (
         <ErrorView 
           error={
@@ -149,6 +156,7 @@ export const DriversPage: React.FC = () => {
           } 
         />
       )}
+      <TabBar activeTab={activeTab} onTabPress={setActiveTab} />
     </SafeAreaView>
   );
 };
@@ -157,6 +165,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1E1E1E',
+    paddingBottom: 60,
   },
   header: {
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0,

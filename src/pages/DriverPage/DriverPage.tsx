@@ -6,7 +6,7 @@ import { Tabs } from '../../shared/ui/Tabs/Tabs';
 import { selectDriverDetails, selectDriverDetailsLoading, selectDriverDetailsError } from '../../entities/driver/model/details/driverDetailsSelectors';
 import { fetchDriverDetails } from '../../entities/driver/model/details/driverDetailsThunks';
 import { DriverDetails } from '../../shared/types/driver';
-import { AppDispatch } from '../../app/store';
+import { AppDispatch } from '../../app/store/index';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { TEAM_COLORS } from '../../shared/constants/teamColors';
 
