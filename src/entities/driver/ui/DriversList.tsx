@@ -11,6 +11,7 @@ interface Props {
   onDriverPress: (driverId: string) => void;
   isInitialized: boolean;
   year: number;
+  noDataForYear?: boolean;
 }
 
 export const DriversList: React.FC<Props> = ({
@@ -21,6 +22,7 @@ export const DriversList: React.FC<Props> = ({
   onDriverPress,
   isInitialized,
   year,
+  noDataForYear = false,
 }) => {
   const flatListRef = useRef<FlatList>(null);
   const isFetchingMore = useRef(false);
@@ -40,7 +42,7 @@ export const DriversList: React.FC<Props> = ({
   }, [hasMore, loading, isInitialized, onEndReached]);
 
   const renderFooter = useCallback(() => {
-    if (!hasMore || !isInitialized) return null;
+    if (!hasMore || standings.length === 0) return null;
     return <LoadingFooter />;
   }, [hasMore, isInitialized]);
 
@@ -48,11 +50,11 @@ export const DriversList: React.FC<Props> = ({
     if (!isInitialized || loading) {
       return <LoadingState />;
     }
-    if (standings.length === 0) {
+    if (noDataForYear) {
       return <EmptyState />;
     }
     return null;
-  }, [loading, standings.length, isInitialized]);
+  }, [loading, isInitialized, noDataForYear]);
 
   const keyExtractor = useCallback((item: DriverStanding) => 
     item.Driver.driverId, 
@@ -106,11 +108,10 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     position: 'absolute',
-    top: 0,
+    top: 300,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#1E1E1E',
     zIndex: 1,
@@ -158,7 +159,6 @@ const MemoizedDriverItem = memo(
     />
   ),
   (prevProps, nextProps) => {
-    // Оптимизация ререндера
     return (
       prevProps.driver.Driver.driverId === nextProps.driver.Driver.driverId &&
       prevProps.driver.position === nextProps.driver.position &&

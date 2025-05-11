@@ -1,11 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
-import driversReducer from '../../entities/driver/model/driversSlice';
-import driverStandingsReducer from '../../entities/driver/model/driverStandingsSlice';
-
+import driverStandingsReducer from '../../entities/driver/model/standings/driverStandingsSlice';
+import driverDetailsReducer from '../../entities/driver/model/details/driverDetailsSlice';
 export const store = configureStore({
   reducer: {
-    drivers: driversReducer,
     driverStandings: driverStandingsReducer,
+    driverDetails: driverDetailsReducer,
   },
 });
 

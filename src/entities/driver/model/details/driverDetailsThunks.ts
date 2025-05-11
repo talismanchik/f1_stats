@@ -1,7 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { DriverDetails } from './types';
-import { AppDispatch } from '../../../app/store';
-import { getDriverDetails, getDriverAchievements } from '../../../shared/api/driverApi';
+import { DriverDetails } from '../../../../shared/types/driver';
+import { getDriverDetails, getDriverAchievements } from '../../../../shared/api/driverApi';
 import {
   fetchDriverDetailsStart,
   fetchDriverDetailsSuccess,

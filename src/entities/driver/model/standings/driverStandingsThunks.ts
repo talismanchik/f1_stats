@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { DriverStanding } from '../../../shared/types/driver';
-import { f1Api } from '../../../shared/api/f1Api';
+import { DriverStanding } from '../../../../shared/types/driver';
+import { f1Api } from '../../../../shared/api/f1Api';
 import {
   fetchDriverStandingsStart,
   fetchDriverStandingsSuccess,

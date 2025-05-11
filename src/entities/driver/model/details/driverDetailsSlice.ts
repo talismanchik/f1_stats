@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DriverDetails } from './types';
+import { DriverDetails } from '../../../../shared/types/driver';
 
 interface DriverDetailsState {
   details: DriverDetails | null;

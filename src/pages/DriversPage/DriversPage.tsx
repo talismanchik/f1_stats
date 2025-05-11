@@ -1,18 +1,18 @@
 import React, { useEffect, useCallback, memo } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, StatusBar, Platform } from 'react-native';
 import { useSelector } from 'react-redux';
-import { fetchDriverStandings } from '../../entities/driver/model/driverStandingsThunks';
-import { fetchDriverDetails } from '../../entities/driver/model/driverDetailsThunks';
+import { fetchDriverStandings } from '../../entities/driver/model/standings/driverStandingsThunks';
+import { fetchDriverDetails } from '../../entities/driver/model/details/driverDetailsThunks';
 import { 
   selectDriverStandings, 
   selectDriverStandingsLoading, 
   selectDriverStandingsError, 
   selectHasMore,
   selectCachedYear 
-} from '../../entities/driver/model/driverStandingsSelectors';
-import { loadFromCache, resetStandings } from '../../entities/driver/model/driverStandingsSlice';
+} from '../../entities/driver/model/standings/driverStandingsSelectors';
+import { loadFromCache, resetStandings } from '../../entities/driver/model/standings/driverStandingsSlice';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
-import { Pagination } from '../../features/pagination/Pagination';
+import { Pagination } from '../../shared/ui/Pagination/Pagination';
 import { DriversList } from '../../entities/driver/ui/DriversList';
 import { useDebounce } from '../../shared/hooks/useDebounce';
 import { DriverStanding } from '../../shared/types/driver';
@@ -41,6 +41,7 @@ export const DriversPage: React.FC = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [isInitialized, setIsInitialized] = React.useState(false);
   const cachedYear = useSelector(selectCachedYear(currentYear));
+  const noDataForYear = useSelector((state: any) => state.driverStandings.noDataForYear);
 
   const standings = React.useMemo(() => {
     const uniqueStandings = new Map();
@@ -135,6 +136,7 @@ export const DriversPage: React.FC = () => {
         isInitialized={isInitialized}
         onDriverPress={handleDriverPress}
         year={currentYear}
+        noDataForYear={noDataForYear}
       />
       {error && (
         <ErrorView 

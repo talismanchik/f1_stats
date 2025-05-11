@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { Button } from '../../shared/ui/Button/Button';
+import { Button } from '../Button/Button';
 
 type Props = {
   value: string;

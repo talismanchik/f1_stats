@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, ScrollView, StatusBar, TouchableOpacity } from 
 import { useSelector, useDispatch } from 'react-redux';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { Tabs } from '../../shared/ui/Tabs/Tabs';
-import { selectDriverDetails, selectDriverDetailsLoading, selectDriverDetailsError } from '../../entities/driver/model/driverDetailsSelectors';
-import { fetchDriverDetails } from '../../entities/driver/model/driverDetailsThunks';
+import { selectDriverDetails, selectDriverDetailsLoading, selectDriverDetailsError } from '../../entities/driver/model/details/driverDetailsSelectors';
+import { fetchDriverDetails } from '../../entities/driver/model/details/driverDetailsThunks';
 import { DriverDetails } from '../../shared/types/driver';
 import { AppDispatch } from '../../app/store';
 import Icon from 'react-native-vector-icons/MaterialIcons';

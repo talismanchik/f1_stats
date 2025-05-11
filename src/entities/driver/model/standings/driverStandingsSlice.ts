@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DriverStanding } from '../../../shared/types/driver';
+import { DriverStanding } from '../../../../shared/types/driver';
 
 interface DriverStandingsState {
   standings: DriverStanding[];
@@ -13,6 +13,7 @@ interface DriverStandingsState {
       totalDrivers: number;
     };
   };
+  noDataForYear: boolean;
 }
 
 const initialState: DriverStandingsState = {
@@ -22,6 +23,7 @@ const initialState: DriverStandingsState = {
   hasMore: true,
   currentPage: 1,
   cache: {},
+  noDataForYear: false,
 };
 
 const driverStandingsSlice = createSlice({
@@ -31,15 +33,18 @@ const driverStandingsSlice = createSlice({
     fetchDriverStandingsStart: (state) => {
       state.loading = true;
       state.error = null;
+      state.noDataForYear = false;
     },
     fetchDriverStandingsSuccess: (state, action: PayloadAction<{ standings: DriverStanding[]; hasMore: boolean }>) => {
       state.standings = action.payload.standings;
       state.loading = false;
       state.hasMore = action.payload.hasMore;
+      state.noDataForYear = action.payload.standings.length === 0 && !state.error;
     },
     fetchDriverStandingsFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
+      state.noDataForYear = false;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -51,6 +56,7 @@ const driverStandingsSlice = createSlice({
       state.standings = [];
       state.hasMore = true;
       state.error = null;
+      state.noDataForYear = false;
     },
     setStandings: (state, action: PayloadAction<{ drivers: DriverStanding[]; total: number; year: number }>) => {
       state.standings = action.payload.drivers;
