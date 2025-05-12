@@ -1,6 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { getGrandPrixList, getResultsByGrandPrix } from '../../../shared/api/resultsApi';
-import { setGrandPrixList, setResults, setLoading, setError } from './resultsSlice';
 
 export const fetchGrandPrixList = createAsyncThunk(
   'results/fetchGrandPrixList',

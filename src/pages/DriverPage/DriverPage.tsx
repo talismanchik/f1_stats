@@ -132,36 +132,34 @@ export const DriverPage: React.FC = () => {
           onTabPress={setActiveTab}
         />
         {activeTab === 'biography' ? (
-          <View style={styles.biographyContainer}>
-            <Text style={styles.biographyText}>
-              {driverDetails.givenName} {driverDetails.familyName} - гонщик Формулы-1 из {driverDetails.nationality}.
-              {driverDetails.permanentNumber && ` Постоянный номер: ${driverDetails.permanentNumber}.`}
-              {driverDetails.code && ` Код гонщика: ${driverDetails.code}.`}
-            </Text>
-          </View>
+          <View style={styles.tabContent}>
+          <View style={styles.bioItem}><Text style={styles.bioLabel}>Дата рождения</Text><Text style={styles.bioValue}>{driverDetails?.dateOfBirth}</Text></View>
+          <View style={styles.bioItem}><Text style={styles.bioLabel}>Национальность</Text><Text style={styles.bioValue}>{driverDetails?.nationality}</Text></View>
+          <View style={styles.bioItem}><Text style={styles.bioLabel}>Код гонщика</Text><Text style={styles.bioValue}>{driverDetails?.code}</Text></View>
+        </View>
         ) : (
-          <View style={styles.achievementsContainer}>
-            <View style={styles.achievementItem}>
-              <Text style={styles.achievementLabel}>Чемпионства</Text>
-              <Text style={styles.achievementValue}>{driverDetails.achievements.championships}</Text>
-            </View>
-            <View style={styles.achievementItem}>
-              <Text style={styles.achievementLabel}>Победы</Text>
-              <Text style={styles.achievementValue}>{driverDetails.achievements.wins}</Text>
-            </View>
-            <View style={styles.achievementItem}>
-              <Text style={styles.achievementLabel}>Вторые места</Text>
-              <Text style={styles.achievementValue}>{driverDetails.achievements.secondPlaces}</Text>
-            </View>
-            <View style={styles.achievementItem}>
-              <Text style={styles.achievementLabel}>Подиумы</Text>
-              <Text style={styles.achievementValue}>{driverDetails.achievements.podiums}</Text>
-            </View>
-            <View style={styles.achievementItem}>
-              <Text style={styles.achievementLabel}>Поулы</Text>
-              <Text style={styles.achievementValue}>{driverDetails.achievements.polePositions}</Text>
-            </View>
+          <View style={styles.tabContent}>
+          <View style={styles.achievement}>
+            <Text style={styles.achievementTitle}>Чемпионства</Text>
+            <Text style={styles.achievementValue}>{driverDetails?.achievements?.championships || 0}</Text>
           </View>
+          <View style={styles.achievement}>
+            <Text style={styles.achievementTitle}>Победы</Text>
+            <Text style={styles.achievementValue}>{driverDetails?.achievements?.wins || 0}</Text>
+          </View>
+          <View style={styles.achievement}>
+            <Text style={styles.achievementTitle}>Вторые места</Text>
+            <Text style={styles.achievementValue}>{driverDetails?.achievements?.secondPlaces || 0}</Text>
+          </View>
+          <View style={styles.achievement}>
+            <Text style={styles.achievementTitle}>Подиумы</Text>
+            <Text style={styles.achievementValue}>{driverDetails?.achievements?.podiums || 0}</Text>
+          </View>
+          <View style={styles.achievement}>
+            <Text style={styles.achievementTitle}>Поулы</Text>
+            <Text style={styles.achievementValue}>{driverDetails?.achievements?.polePositions || 0}</Text>
+          </View>
+        </View>
         )}
       </ScrollView>
     </View>
@@ -181,6 +179,42 @@ const styles = StyleSheet.create({
     borderBottomColor: '#2A2A2A',
     backgroundColor: '#1E1E1E',
   },
+  tabContent: {
+    padding: 20,
+  },
+  bioItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  bioLabel: {
+    fontSize: 16,
+    color: '#CCCCCC',
+  },
+  bioValue: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  achievement: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  achievementTitle: {
+    fontSize: 16,
+    color: '#CCCCCC',
+  },
+  achievementValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
   backButton: {
     marginBottom: 12,
   },
@@ -198,18 +232,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   numberContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FF1E1E',
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: '#333333',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
   number: {
-    color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   nameContainer: {
     flex: 1,
@@ -247,11 +281,6 @@ const styles = StyleSheet.create({
   achievementLabel: {
     fontSize: 16,
     color: '#888888',
-  },
-  achievementValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
   },
   loadingContainer: {
     flex: 1,

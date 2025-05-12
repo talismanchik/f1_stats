@@ -2,9 +2,6 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DriverStanding } from '../../../../shared/types/driver';
 import { getDriverStandings } from '../../../../shared/api/standingsApi';
 import {
-  fetchDriverStandingsStart,
-  fetchDriverStandingsSuccess,
-  fetchDriverStandingsFailure,
   setLoading,
   setError,
   resetStandings,

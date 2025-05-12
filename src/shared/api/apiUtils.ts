@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios';
 
-// Типы для ошибок
 export type ApiErrorType = {
   message: string;
   status?: number;
@@ -8,7 +7,6 @@ export type ApiErrorType = {
   name: string;
 };
 
-// Создаем ошибку API
 export const createApiError = (message: string, status?: number, code?: string): ApiErrorType => ({
   message,
   status,
@@ -16,7 +14,6 @@ export const createApiError = (message: string, status?: number, code?: string):
   name: 'ApiError'
 });
 
-// Фабрика для создания контроллера отмены запросов
 export const createAbortController = () => {
   let controller: AbortController | null = null;
 
@@ -31,7 +28,6 @@ export const createAbortController = () => {
   };
 };
 
-// Общая функция обработки ошибок
 export const handleApiError = (error: unknown, context: string): never => {
   if (axios.isCancel(error)) {
     throw createApiError('Запрос был отменен');
@@ -54,7 +50,6 @@ export const handleApiError = (error: unknown, context: string): never => {
   throw createApiError(`Ошибка при выполнении запроса: ${context}`);
 };
 
-// Типы для параметров
 export type PaginationParams = {
   limit?: number;
   offset?: number;

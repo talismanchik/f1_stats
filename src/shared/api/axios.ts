@@ -1,9 +1,8 @@
 import axios from 'axios';
-
-const BASE_URL = 'https://ergast.com/api/f1';
+import { API_URL } from '../config/api';
 
 export const axiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_URL,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
