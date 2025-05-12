@@ -4,7 +4,7 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { Tabs } from '../../shared/ui/Tabs/Tabs';
 import { selectDriverDetails, selectDriverDetailsLoading, selectDriverDetailsError } from '../../entities/driver/model/details/driverDetailsSelectors';
 import { fetchDriverDetails } from '../../entities/driver/model/details/driverDetailsThunks';
-import { resetDriverDetails } from '../../entities/driver/model/details/driverDetailsSlice';
+import { resetDriverDetails, setDriverDetailsLoading } from '../../entities/driver/model/details/driverDetailsSlice';
 import { DriverDetails } from '../../shared/types/driver';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
@@ -35,7 +35,8 @@ export const DriverPage: React.FC = () => {
   useEffect(() => {
     const driverId = route.params.driverId;
     if (driverId) {
-      console.log('Loading driver details for:', driverId);
+      dispatch(setDriverDetailsLoading());
+      
       dispatch(fetchDriverDetails(driverId))
         .unwrap()
         .catch((error) => {
@@ -62,35 +63,31 @@ export const DriverPage: React.FC = () => {
         </View>
       </TouchableOpacity>
       
-      <View style={styles.driverInfo}>
-        <View style={styles.numberContainer}>
-          <Text style={styles.number}>{driverDetails?.permanentNumber}</Text>
+      {!loading && driverDetails && (
+        <View style={styles.driverInfo}>
+          <View style={styles.numberContainer}>
+            <Text style={styles.number}>{driverDetails.permanentNumber}</Text>
+          </View>
+          <View style={styles.nameContainer}>
+            <Text style={styles.name}>
+              {driverDetails.givenName} {driverDetails.familyName}
+            </Text>
+          </View>
         </View>
-        <View style={styles.nameContainer}>
-          <Text style={styles.name}>
-            {driverDetails?.givenName} {driverDetails?.familyName}
-          </Text>
-        </View>
-      </View>
+      )}
     </View>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        {renderHeader()}
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      {renderHeader()}
+      {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF1E1E" />
           <Text style={styles.loadingText}>Загрузка данных гонщика...</Text>
         </View>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        {renderHeader()}
+      ) : error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity 
@@ -100,14 +97,7 @@ export const DriverPage: React.FC = () => {
             <Text style={styles.retryButtonText}>Повторить</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    );
-  }
-
-  if (!driverDetails) {
-    return (
-      <View style={styles.container}>
-        {renderHeader()}
+      ) : !driverDetails ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Данные гонщика не найдены</Text>
           <TouchableOpacity 
@@ -117,51 +107,50 @@ export const DriverPage: React.FC = () => {
             <Text style={styles.retryButtonText}>Повторить</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      {renderHeader()}
-      <ScrollView style={styles.content}>
-        <Tabs
-          tabs={TABS}
-          activeTab={activeTab}
-          onTabPress={setActiveTab}
-        />
-        {activeTab === 'biography' ? (
-          <View style={styles.tabContent}>
-          <View style={styles.bioItem}><Text style={styles.bioLabel}>Дата рождения</Text><Text style={styles.bioValue}>{driverDetails?.dateOfBirth}</Text></View>
-          <View style={styles.bioItem}><Text style={styles.bioLabel}>Национальность</Text><Text style={styles.bioValue}>{driverDetails?.nationality}</Text></View>
-          <View style={styles.bioItem}><Text style={styles.bioLabel}>Код гонщика</Text><Text style={styles.bioValue}>{driverDetails?.code}</Text></View>
-        </View>
-        ) : (
-          <View style={styles.tabContent}>
-          <View style={styles.achievement}>
-            <Text style={styles.achievementTitle}>Чемпионства</Text>
-            <Text style={styles.achievementValue}>{driverDetails?.achievements?.championships || 0}</Text>
-          </View>
-          <View style={styles.achievement}>
-            <Text style={styles.achievementTitle}>Победы</Text>
-            <Text style={styles.achievementValue}>{driverDetails?.achievements?.wins || 0}</Text>
-          </View>
-          <View style={styles.achievement}>
-            <Text style={styles.achievementTitle}>Вторые места</Text>
-            <Text style={styles.achievementValue}>{driverDetails?.achievements?.secondPlaces || 0}</Text>
-          </View>
-          <View style={styles.achievement}>
-            <Text style={styles.achievementTitle}>Подиумы</Text>
-            <Text style={styles.achievementValue}>{driverDetails?.achievements?.podiums || 0}</Text>
-          </View>
-          <View style={styles.achievement}>
-            <Text style={styles.achievementTitle}>Поулы</Text>
-            <Text style={styles.achievementValue}>{driverDetails?.achievements?.polePositions || 0}</Text>
-          </View>
-        </View>
-        )}
-      </ScrollView>
+      ) : (
+        <ScrollView style={styles.content}>
+          <Tabs
+            tabs={TABS}
+            activeTab={activeTab}
+            onTabPress={setActiveTab}
+          />
+          {activeTab === 'biography' ? (
+            <View style={styles.tabContent}>
+              <View style={styles.bioItem}>
+                <Text style={styles.bioLabel}>Дата рождения</Text>
+                <Text style={styles.bioValue}>{driverDetails.dateOfBirth}</Text>
+              </View>
+              <View style={styles.bioItem}>
+                <Text style={styles.bioLabel}>Национальность</Text>
+                <Text style={styles.bioValue}>{driverDetails.nationality}</Text>
+              </View>
+              <View style={styles.bioItem}>
+                <Text style={styles.bioLabel}>Код гонщика</Text>
+                <Text style={styles.bioValue}>{driverDetails.code}</Text>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.tabContent}>
+              <View style={styles.achievement}>
+                <Text style={styles.achievementTitle}>Чемпионства</Text>
+                <Text style={styles.achievementValue}>{driverDetails.achievements.championships}</Text>
+              </View>
+              <View style={styles.achievement}>
+                <Text style={styles.achievementTitle}>Победы</Text>
+                <Text style={styles.achievementValue}>{driverDetails.achievements.wins}</Text>
+              </View>
+              <View style={styles.achievement}>
+                <Text style={styles.achievementTitle}>Подиумы</Text>
+                <Text style={styles.achievementValue}>{driverDetails.achievements.podiums}</Text>
+              </View>
+              <View style={styles.achievement}>
+                <Text style={styles.achievementTitle}>Поулы</Text>
+                <Text style={styles.achievementValue}>{driverDetails.achievements.polePositions}</Text>
+              </View>
+            </View>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 };

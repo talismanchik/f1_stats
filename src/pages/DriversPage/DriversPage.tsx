@@ -8,7 +8,8 @@ import {
   selectDriverStandingsLoading, 
   selectDriverStandingsError, 
   selectHasMore,
-  selectCachedYear 
+  selectCachedYear,
+  selectNoDataForYear
 } from '../../entities/driver/model/standings/driverStandingsSelectors';
 import { loadFromCache, resetStandings } from '../../entities/driver/model/standings/driverStandingsSlice';
 import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
@@ -43,7 +44,7 @@ export const DriversPage: React.FC = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [isInitialized, setIsInitialized] = React.useState(false);
   const cachedYear = useSelector(selectCachedYear(currentYear));
-  const noDataForYear = useSelector((state: any) => state.driverStandings.noDataForYear);
+  const noDataForYear = useSelector(selectNoDataForYear);
   const [activeTab, setActiveTab] = React.useState<'drivers' | 'results'>('drivers');
 
   const standings = useMemo(() => {
@@ -111,14 +112,9 @@ export const DriversPage: React.FC = () => {
     }
   }, [currentYear, currentPage, hasMore, loading, dispatch]);
 
-  const handleDriverPress = useCallback(async (driverId: string) => {
-    try {         
-      await dispatch(fetchDriverDetails(driverId)).unwrap();
-      navigation.navigate('DriverPage', { driverId });
-    } catch (error) {
-      console.error('Error in handleDriverPress:', error);
-    }
-  }, [dispatch, navigation]);
+  const handleDriverPress = useCallback((driverId: string) => {
+    navigation.navigate('DriverPage', { driverId });
+  }, [navigation]);
 
   return (
     <SafeAreaView style={styles.container}>

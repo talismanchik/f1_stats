@@ -61,6 +61,7 @@ const driverStandingsSlice = createSlice({
     setStandings: (state, action: PayloadAction<{ drivers: DriverStanding[]; total: number; year: number }>) => {
       state.standings = action.payload.drivers;
       state.hasMore = action.payload.drivers.length === 10 && action.payload.total > 10;
+      state.noDataForYear = action.payload.drivers.length === 0 && !state.error;
       state.cache[action.payload.year] = {
         standings: action.payload.drivers,
         totalDrivers: action.payload.total,

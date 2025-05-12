@@ -6,8 +6,6 @@ export const fetchDriverDetails = createAsyncThunk<DriverDetails, string>(
   'driverDetails/fetchDriverDetails',
   async (driverId, { signal, rejectWithValue }) => {
     try {
-      console.log('Fetching driver details for:', driverId);
-      
       const [detailsResponse, achievements] = await Promise.all([
         getDriverDetails({ driverId, signal }),
         getDriverAchievements({ driverId, signal })
@@ -16,11 +14,8 @@ export const fetchDriverDetails = createAsyncThunk<DriverDetails, string>(
       const driver = detailsResponse.MRData.DriverTable.Drivers[0];
       
       if (!driver) {
-        console.error('Driver not found:', driverId);
-        return rejectWithValue('Driver not found');
+        return rejectWithValue('Гонщик не найден');
       }
-
-      console.log('Driver details fetched successfully:', driver.driverId);
       
       const driverDetails: DriverDetails = {
         driverId: driver.driverId,
@@ -43,8 +38,7 @@ export const fetchDriverDetails = createAsyncThunk<DriverDetails, string>(
 
       return driverDetails;
     } catch (error) {
-      console.error('Error fetching driver details:', error);
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch driver details');
+      return rejectWithValue(error instanceof Error ? error.message : 'Не удалось загрузить данные гонщика');
     }
   }
 ); 

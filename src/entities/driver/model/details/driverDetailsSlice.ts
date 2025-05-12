@@ -22,6 +22,10 @@ export const driverDetailsSlice = createSlice({
       state.details = null;
       state.loading = false;
       state.error = null;
+    },
+    setDriverDetailsLoading: (state) => {
+      state.loading = true;
+      state.error = null;
     }
   },
   extraReducers: (builder) => {
@@ -41,6 +45,9 @@ export const driverDetailsSlice = createSlice({
   }
 });
 
-export const { resetDriverDetails } = driverDetailsSlice.actions;
+export const { 
+  resetDriverDetails, 
+  setDriverDetailsLoading,
+} = driverDetailsSlice.actions;
 
 export default driverDetailsSlice.reducer; 
