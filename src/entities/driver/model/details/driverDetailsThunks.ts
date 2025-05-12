@@ -1,24 +1,26 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DriverDetails } from '../../../../shared/types/driver';
 import { getDriverDetails, getDriverAchievements } from '../../../../shared/api/driverApi';
-import {
-  fetchDriverDetailsStart,
-  fetchDriverDetailsSuccess,
-  fetchDriverDetailsFailure,
-} from './driverDetailsSlice';
 
 export const fetchDriverDetails = createAsyncThunk<DriverDetails, string>(
   'driverDetails/fetchDriverDetails',
-  async (driverId, thunkAPI) => {
+  async (driverId, { signal, rejectWithValue }) => {
     try {
-      thunkAPI.dispatch(fetchDriverDetailsStart());
+      console.log('Fetching driver details for:', driverId);
       
       const [detailsResponse, achievements] = await Promise.all([
-        getDriverDetails(driverId),
-        getDriverAchievements(driverId)
+        getDriverDetails({ driverId, signal }),
+        getDriverAchievements({ driverId, signal })
       ]);
 
       const driver = detailsResponse.MRData.DriverTable.Drivers[0];
+      
+      if (!driver) {
+        console.error('Driver not found:', driverId);
+        return rejectWithValue('Driver not found');
+      }
+
+      console.log('Driver details fetched successfully:', driver.driverId);
       
       const driverDetails: DriverDetails = {
         driverId: driver.driverId,
@@ -39,12 +41,10 @@ export const fetchDriverDetails = createAsyncThunk<DriverDetails, string>(
         }
       };
 
-      thunkAPI.dispatch(fetchDriverDetailsSuccess(driverDetails));
       return driverDetails;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при загрузке данных гонщика';
-      thunkAPI.dispatch(fetchDriverDetailsFailure(errorMessage));
-      throw error;
+      console.error('Error fetching driver details:', error);
+      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch driver details');
     }
   }
 ); 

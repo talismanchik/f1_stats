@@ -47,6 +47,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({ year }) => {
 
   React.useEffect(() => {
     if (grandPrixList.length > 0) {
+      console.log('fetchResultsByGrandPrix');
+      
       dispatch(fetchResultsByGrandPrix({ year, round: currentRound }));
     }
   }, [dispatch, year, currentRound, grandPrixList.length]);
@@ -68,7 +70,6 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({ year }) => {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Результаты</Text> */}
       {hasGrandPrix && <ResultsTable results={results} loading={loading} />}
       {hasGrandPrix && (
         <View style={styles.paginationFixed}>
@@ -83,7 +84,8 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({ year }) => {
           </TouchableOpacity>
         </View>
       )}
-      {!hasGrandPrix && loading && <ActivityIndicator size="large" color="#FF1E1E" style={{ marginTop: 20 }} />}
+      {!hasGrandPrix && loading && 
+      <ActivityIndicator size="large" color="#FF1E1E" style={{ marginTop: 20 }} />}
       {error && <Text style={{ color: '#FF4444', marginTop: 20 }}>{error}</Text>}
     </View>
   );

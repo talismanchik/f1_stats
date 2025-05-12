@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { GrandPrix, Result } from '../../../shared/types/results';
+import { fetchGrandPrixList, fetchResultsByGrandPrix } from './resultsThunks';
 
 interface ResultsCache {
   grandPrixList: GrandPrix[];
@@ -51,6 +52,39 @@ const resultsSlice = createSlice({
     setError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchGrandPrixList.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchGrandPrixList.fulfilled, (state, action) => {
+        state.loading = false;
+        if (!state.cache[state.year]) {
+          state.cache[state.year] = { grandPrixList: [], resultsByRound: {} };
+        }
+        state.cache[state.year].grandPrixList = action.payload;
+      })
+      .addCase(fetchGrandPrixList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch grand prix list';
+      })
+      .addCase(fetchResultsByGrandPrix.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchResultsByGrandPrix.fulfilled, (state, action) => {
+        state.loading = false;
+        if (!state.cache[state.year]) {
+          state.cache[state.year] = { grandPrixList: [], resultsByRound: {} };
+        }
+        state.cache[state.year].resultsByRound[state.currentRound] = action.payload;
+      })
+      .addCase(fetchResultsByGrandPrix.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch results';
+      });
   },
 });
 

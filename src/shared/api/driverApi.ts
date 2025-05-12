@@ -1,17 +1,34 @@
 import { DriverDetailsResponse, DriverAchievements } from '../types/driver';
 import { axiosInstance } from './axios';
+import { handleApiError, BaseRequestParams } from './apiUtils';
 
-export const getDriverDetails = async (driverId: string): Promise<DriverDetailsResponse> => {
+export type GetDriverDetailsParams = BaseRequestParams & {
+  driverId: string;
+};
+
+export const getDriverDetails = async ({
+  driverId,
+  signal
+}: GetDriverDetailsParams): Promise<DriverDetailsResponse> => {
   try {
-    const response = await axiosInstance.get(`/drivers/${driverId}.json`);
+    const response = await axiosInstance.get<DriverDetailsResponse>(
+      `/drivers/${driverId}.json`,
+      { signal }
+    );
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch driver details:', error);
-    throw new Error('Failed to fetch driver details');
+    return handleApiError(error, 'getDriverDetails');
   }
 };
 
-export const getDriverAchievements = async (driverId: string): Promise<DriverAchievements> => {
+export type GetDriverAchievementsParams = BaseRequestParams & {
+  driverId: string;
+};
+
+export const getDriverAchievements = async ({
+  driverId,
+  signal
+}: GetDriverAchievementsParams): Promise<DriverAchievements> => {
   try {
     let allResults: any[] = [];
     let offset = 0;
@@ -20,10 +37,8 @@ export const getDriverAchievements = async (driverId: string): Promise<DriverAch
 
     while (hasMore) {
       const response = await axiosInstance.get(`/drivers/${driverId}/results.json`, {
-        params: {
-          limit,
-          offset
-        }
+        params: { limit, offset },
+        signal
       });
       
       const data = response.data;
@@ -59,7 +74,10 @@ export const getDriverAchievements = async (driverId: string): Promise<DriverAch
 
     const seasons = new Set(allResults.map((race: any) => race.season)).size;
 
-    const championshipsResponse = await axiosInstance.get(`/drivers/${driverId}/driverStandings/1.json`);
+    const championshipsResponse = await axiosInstance.get(
+      `/drivers/${driverId}/driverStandings/1.json`,
+      { signal }
+    );
     const championshipsData = championshipsResponse.data;
 
     return {
@@ -73,7 +91,6 @@ export const getDriverAchievements = async (driverId: string): Promise<DriverAch
       seasons
     };
   } catch (error) {
-    console.error('Failed to fetch driver achievements:', error);
-    throw new Error('Failed to fetch driver achievements');
+    return handleApiError(error, 'getDriverAchievements');
   }
 }; 

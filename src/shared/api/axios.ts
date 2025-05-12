@@ -4,7 +4,6 @@ const BASE_URL = 'https://ergast.com/api/f1';
 
 export const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',

@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DriverStanding } from '../../../../shared/types/driver';
-import { f1Api } from '../../../../shared/api/f1Api';
+import { getDriverStandings } from '../../../../shared/api/standingsApi';
 import {
   fetchDriverStandingsStart,
   fetchDriverStandingsSuccess,
@@ -15,10 +15,10 @@ import {
 
 const DRIVERS_PER_PAGE = 10;
 
-interface FetchDriverStandingsParams {
+type FetchDriverStandingsParams = {
   year: number;
   page: number;
-}
+};
 
 export const fetchDriverStandings = createAsyncThunk(
   'driverStandings/fetchDriverStandings',
@@ -38,7 +38,12 @@ export const fetchDriverStandings = createAsyncThunk(
       }
 
       const offset = (page - 1) * DRIVERS_PER_PAGE;
-      const data = await f1Api.getDriverStandings(year, DRIVERS_PER_PAGE, offset, signal);
+      const data = await getDriverStandings({
+        year,
+        limit: DRIVERS_PER_PAGE,
+        offset,
+        signal
+      });
       const drivers = data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings || [];
       const total = parseInt(data.MRData.total, 10);
 

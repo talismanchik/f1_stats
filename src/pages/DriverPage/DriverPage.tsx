@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, StatusBar, TouchableOpacity } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
+import { View, Text, StyleSheet, ScrollView, StatusBar, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { Tabs } from '../../shared/ui/Tabs/Tabs';
 import { selectDriverDetails, selectDriverDetailsLoading, selectDriverDetailsError } from '../../entities/driver/model/details/driverDetailsSelectors';
 import { fetchDriverDetails } from '../../entities/driver/model/details/driverDetailsThunks';
+import { resetDriverDetails } from '../../entities/driver/model/details/driverDetailsSlice';
 import { DriverDetails } from '../../shared/types/driver';
-import { AppDispatch } from '../../app/store/index';
+import { useAppDispatch } from '../../shared/hooks/useAppDispatch';
+import { useAppSelector } from '../../shared/hooks/useAppSelector';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { TEAM_COLORS } from '../../shared/constants/teamColors';
 
@@ -24,18 +25,28 @@ const TABS = [
 export const DriverPage: React.FC = () => {
   const route = useRoute<DriverPageRouteProp>();
   const navigation = useNavigation();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   
-  const driverDetails = useSelector(selectDriverDetails) as DriverDetails | null;
-  const loading = useSelector(selectDriverDetailsLoading);
-  const error = useSelector(selectDriverDetailsError);
+  const driverDetails = useAppSelector(selectDriverDetails) as DriverDetails | null;
+  const loading = useAppSelector(selectDriverDetailsLoading);
+  const error = useAppSelector(selectDriverDetailsError);
 
   useEffect(() => {
     const driverId = route.params.driverId;
     if (driverId) {
-      dispatch(fetchDriverDetails(driverId));
+      console.log('Loading driver details for:', driverId);
+      dispatch(fetchDriverDetails(driverId))
+        .unwrap()
+        .catch((error) => {
+          console.error('Failed to load driver details:', error);
+        });
     }
+
+    return () => {
+      console.log('Cleaning up driver details');
+      dispatch(resetDriverDetails());
+    };
   }, [dispatch, route.params.driverId]);
 
   const handleBack = () => {
@@ -64,43 +75,14 @@ export const DriverPage: React.FC = () => {
     </View>
   );
 
-  const renderBiography = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.bioItem}><Text style={styles.bioLabel}>Дата рождения</Text><Text style={styles.bioValue}>{driverDetails?.dateOfBirth}</Text></View>
-      <View style={styles.bioItem}><Text style={styles.bioLabel}>Национальность</Text><Text style={styles.bioValue}>{driverDetails?.nationality}</Text></View>
-      <View style={styles.bioItem}><Text style={styles.bioLabel}>Код гонщика</Text><Text style={styles.bioValue}>{driverDetails?.code}</Text></View>
-    </View>
-  );
-
-  const renderAchievements = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.achievement}>
-        <Text style={styles.achievementTitle}>Чемпионства</Text>
-        <Text style={styles.achievementValue}>{driverDetails?.achievements?.championships || 0}</Text>
-      </View>
-      <View style={styles.achievement}>
-        <Text style={styles.achievementTitle}>Победы</Text>
-        <Text style={styles.achievementValue}>{driverDetails?.achievements?.wins || 0}</Text>
-      </View>
-      <View style={styles.achievement}>
-        <Text style={styles.achievementTitle}>Вторые места</Text>
-        <Text style={styles.achievementValue}>{driverDetails?.achievements?.secondPlaces || 0}</Text>
-      </View>
-      <View style={styles.achievement}>
-        <Text style={styles.achievementTitle}>Подиумы</Text>
-        <Text style={styles.achievementValue}>{driverDetails?.achievements?.podiums || 0}</Text>
-      </View>
-      <View style={styles.achievement}>
-        <Text style={styles.achievementTitle}>Поулы</Text>
-        <Text style={styles.achievementValue}>{driverDetails?.achievements?.polePositions || 0}</Text>
-      </View>
-    </View>
-  );
-
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text>Загрузка...</Text>
+        {renderHeader()}
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF1E1E" />
+          <Text style={styles.loadingText}>Загрузка данных гонщика...</Text>
+        </View>
       </View>
     );
   }
@@ -108,7 +90,16 @@ export const DriverPage: React.FC = () => {
   if (error) {
     return (
       <View style={styles.container}>
-        <Text style={styles.error}>{error}</Text>
+        {renderHeader()}
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={() => dispatch(fetchDriverDetails(route.params.driverId))}
+          >
+            <Text style={styles.retryButtonText}>Повторить</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -116,21 +107,62 @@ export const DriverPage: React.FC = () => {
   if (!driverDetails) {
     return (
       <View style={styles.container}>
-        <Text>Гонщик не найден</Text>
+        {renderHeader()}
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Данные гонщика не найдены</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={() => dispatch(fetchDriverDetails(route.params.driverId))}
+          >
+            <Text style={styles.retryButtonText}>Повторить</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <ScrollView>
-        {renderHeader()}
+      <StatusBar barStyle="dark-content" />
+      {renderHeader()}
+      <ScrollView style={styles.content}>
         <Tabs
           tabs={TABS}
           activeTab={activeTab}
           onTabPress={setActiveTab}
         />
-        {activeTab === 'biography' ? renderBiography() : renderAchievements()}
+        {activeTab === 'biography' ? (
+          <View style={styles.biographyContainer}>
+            <Text style={styles.biographyText}>
+              {driverDetails.givenName} {driverDetails.familyName} - гонщик Формулы-1 из {driverDetails.nationality}.
+              {driverDetails.permanentNumber && ` Постоянный номер: ${driverDetails.permanentNumber}.`}
+              {driverDetails.code && ` Код гонщика: ${driverDetails.code}.`}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.achievementsContainer}>
+            <View style={styles.achievementItem}>
+              <Text style={styles.achievementLabel}>Чемпионства</Text>
+              <Text style={styles.achievementValue}>{driverDetails.achievements.championships}</Text>
+            </View>
+            <View style={styles.achievementItem}>
+              <Text style={styles.achievementLabel}>Победы</Text>
+              <Text style={styles.achievementValue}>{driverDetails.achievements.wins}</Text>
+            </View>
+            <View style={styles.achievementItem}>
+              <Text style={styles.achievementLabel}>Вторые места</Text>
+              <Text style={styles.achievementValue}>{driverDetails.achievements.secondPlaces}</Text>
+            </View>
+            <View style={styles.achievementItem}>
+              <Text style={styles.achievementLabel}>Подиумы</Text>
+              <Text style={styles.achievementValue}>{driverDetails.achievements.podiums}</Text>
+            </View>
+            <View style={styles.achievementItem}>
+              <Text style={styles.achievementLabel}>Поулы</Text>
+              <Text style={styles.achievementValue}>{driverDetails.achievements.polePositions}</Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -140,45 +172,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1E1E1E',
-    paddingTop: StatusBar.currentHeight || 0,
   },
   header: {
-    padding: 20,
-    paddingTop: 60,
+    paddingTop: 44,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2A2A2A',
+    backgroundColor: '#1E1E1E',
   },
   backButton: {
-    position: 'absolute',
-    left: 20,
-    top: 0,
-    padding: 10,
+    marginBottom: 12,
   },
   backButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#CCCCCC',
     fontSize: 16,
+    color: '#888888',
     marginLeft: 4,
   },
   driverInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
   },
   numberContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: '#333333',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FF1E1E',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
   number: {
-    fontSize: 24,
-    fontWeight: 'bold',
     color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   nameContainer: {
     flex: 1,
@@ -187,51 +218,75 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 4,
   },
-  team: {
+  content: {
+    flex: 1,
+    backgroundColor: '#1E1E1E',
+  },
+  biographyContainer: {
+    padding: 16,
+    backgroundColor: '#1E1E1E',
+  },
+  biographyText: {
     fontSize: 16,
-    color: '#CCCCCC',
-  },
-  tabContent: {
-    padding: 20,
-  },
-  bioItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333333',
-  },
-  bioLabel: {
-    fontSize: 16,
-    color: '#CCCCCC',
-  },
-  bioValue: {
-    fontSize: 16,
+    lineHeight: 24,
     color: '#FFFFFF',
   },
-  achievement: {
+  achievementsContainer: {
+    padding: 16,
+    backgroundColor: '#1E1E1E',
+  },
+  achievementItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333333',
+    borderBottomColor: '#2A2A2A',
   },
-  achievementTitle: {
+  achievementLabel: {
     fontSize: 16,
-    color: '#CCCCCC',
+    color: '#888888',
   },
   achievementValue: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  error: {
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#1E1E1E',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#888888',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#1E1E1E',
+  },
+  errorText: {
+    fontSize: 16,
     color: '#FF4444',
     textAlign: 'center',
-    marginTop: 20,
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#FF1E1E',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 }); 

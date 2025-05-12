@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DriverDetails } from '../../../../shared/types/driver';
+import { fetchDriverDetails } from './driverDetailsThunks';
 
 interface DriverDetailsState {
   details: DriverDetails | null;
@@ -17,25 +18,29 @@ export const driverDetailsSlice = createSlice({
   name: 'driverDetails',
   initialState,
   reducers: {
-    fetchDriverDetailsStart: (state) => {
-      state.loading = true;
+    resetDriverDetails: (state) => {
+      state.details = null;
+      state.loading = false;
       state.error = null;
-    },
-    fetchDriverDetailsSuccess: (state, action: PayloadAction<DriverDetails>) => {
-      state.loading = false;
-      state.details = action.payload;
-    },
-    fetchDriverDetailsFailure: (state, action: PayloadAction<string>) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
+    }
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchDriverDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDriverDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.details = action.payload;
+      })
+      .addCase(fetchDriverDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch driver details';
+      });
+  }
 });
 
-export const {
-  fetchDriverDetailsStart,
-  fetchDriverDetailsSuccess,
-  fetchDriverDetailsFailure,
-} = driverDetailsSlice.actions;
+export const { resetDriverDetails } = driverDetailsSlice.actions;
 
 export default driverDetailsSlice.reducer; 
